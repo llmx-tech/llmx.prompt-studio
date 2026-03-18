@@ -82,9 +82,7 @@ curl -fSL --progress-bar -o "$DMG_PATH" "$DOWNLOAD_URL" \
 # ── Mount & install ──────────────────────────────────────────────────────
 
 info "Mounting disk image..."
-MOUNT_OUTPUT="$(hdiutil attach "$DMG_PATH" -nobrowse -noautoopen)"
-MOUNT_POINT="$(echo "$MOUNT_OUTPUT" | awk '/Apple_HFS/ {for(i=3;i<=NF;i++) printf "%s ", $i; print ""}')"
-MOUNT_POINT="${MOUNT_POINT%% }"
+MOUNT_POINT="$(hdiutil attach "$DMG_PATH" -nobrowse -noautoopen | grep -o '/Volumes/.*$' | sed 's/[[:space:]]*$//')"
 
 [ -d "${MOUNT_POINT}/${APP_NAME}.app" ] \
     || err "Could not find ${APP_NAME}.app in mounted DMG."
