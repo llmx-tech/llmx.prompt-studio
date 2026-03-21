@@ -107,8 +107,69 @@ install_macos() {
 
 # ── Linux ────────────────────────────────────────────────────────────────
 
-install_linux() {
-    # Tauri uses amd64 for x86_64 in AppImage naming
+detect_distro_label() {
+    # Returns ubuntu22, ubuntu24, or empty string
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        case "${ID:-}" in
+            ubuntu|pop|linuxmint|elementary|zorin)
+                case "${VERSION_ID:-}" in
+                    24.*|25.*) echo "ubuntu24"; return ;;
+                    22.*|23.*) echo "ubuntu22"; return ;;
+                esac
+                ;;
+            debian)
+                case "${VERSION_ID:-}" in
+                    12|13) echo "ubuntu22"; return ;;  # bookworm/trixie ~ glibc 2.36
+                    *) ;;
+                esac
+                ;;
+        esac
+    fi
+    # Fallback: check glibc version
+    if command -v ldd >/dev/null 2>&1; then
+        local GLIBC_VER
+        GLIBC_VER="$(ldd --version 2>&1 | head -1 | grep -oP '\d+\.\d+$' || echo "")"
+        if [ -n "$GLIBC_VER" ]; then
+            local MINOR="${GLIBC_VER##*.}"
+            if [ "$MINOR" -ge 38 ] 2>/dev/null; then
+                echo "ubuntu24"; return
+            elif [ "$MINOR" -ge 35 ] 2>/dev/null; then
+                echo "ubuntu22"; return
+            fi
+        fi
+    fi
+    echo ""
+}
+
+install_linux_deb() {
+    local DISTRO_LABEL="$1"
+    local DEB_NAME="LLMx Prompt Studio_${VERSION}_amd64-${DISTRO_LABEL}.deb"
+    local DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/v${VERSION}/${DEB_NAME// /%20}"
+    local DEB_PATH="${TMPDIR_INSTALL}/llmx.deb"
+
+    info "Downloading ${DEB_NAME}..."
+    if ! curl -fSL --progress-bar -o "$DEB_PATH" "$DOWNLOAD_URL"; then
+        warn "No ${DISTRO_LABEL} .deb found, falling back to AppImage..."
+        install_linux_appimage
+        return
+    fi
+
+    info "Installing runtime dependencies..."
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq libwebkit2gtk-4.1-0 libgtk-3-0 libayatana-appindicator3-1 2>/dev/null || true
+
+    info "Installing .deb package..."
+    sudo dpkg -i "$DEB_PATH" || sudo apt-get install -f -y
+
+    ok "${APP_NAME} v${VERSION} installed successfully!"
+    echo ""
+    echo "  Run: llmx-prompt-studio"
+    echo "  Or find it in your application launcher."
+    echo ""
+}
+
+install_linux_appimage() {
     local LINUX_ARCH="$ARCH_SUFFIX"
     [ "$LINUX_ARCH" = "x86_64" ] && LINUX_ARCH="amd64"
 
@@ -164,6 +225,24 @@ DESKTOP
     echo ""
     echo "  Or find it in your application launcher."
     echo ""
+}
+
+install_linux() {
+    case "$ARCH" in
+        x86_64|amd64) ;; # supported
+        *) err "Unsupported Linux architecture: $ARCH. Only x86_64 is currently supported." ;;
+    esac
+
+    local DISTRO_LABEL
+    DISTRO_LABEL="$(detect_distro_label)"
+
+    if [ -n "$DISTRO_LABEL" ] && command -v apt-get >/dev/null 2>&1; then
+        info "Detected compatible Debian/Ubuntu system (${DISTRO_LABEL})"
+        install_linux_deb "$DISTRO_LABEL"
+    else
+        info "Using AppImage (universal Linux package)"
+        install_linux_appimage
+    fi
 }
 
 # ── Dispatch ─────────────────────────────────────────────────────────────
