@@ -4,26 +4,19 @@ Desktop AI prompt management app. Design, test, and version prompts across OpenA
 
 ## Install
 
-### macOS
+### macOS / Linux (one-liner)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/llmx-tech/llmx.prompt-studio/main/install.sh | bash
 ```
+
+- **macOS**: Downloads DMG, installs to `/Applications`, removes quarantine flag automatically.
+- **Linux (Ubuntu/Debian)**: Detects your Ubuntu version (22.04 or 24.04) and installs the matching `.deb` package.
 
 If macOS blocks the app ("unidentified developer"):
 ```bash
 xattr -rd com.apple.quarantine "/Applications/LLMx Prompt Studio.app"
 ```
-
-### Linux
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/llmx-tech/llmx.prompt-studio/main/install.sh | bash
-```
-
-Installs an AppImage to `~/.local/bin/`. Works on Ubuntu, Fedora, Arch, and most other distros.
-
-**Deb package** (Ubuntu/Debian) is also available on the [Releases](https://github.com/llmx-tech/llmx.prompt-studio/releases) page.
 
 ### Windows
 
@@ -33,14 +26,14 @@ irm https://raw.githubusercontent.com/llmx-tech/llmx.prompt-studio/main/install.
 
 If SmartScreen blocks the installer, click **More info** then **Run anyway**.
 
-### Specific version (all platforms)
+### Specific version
 
 ```bash
 # macOS / Linux
-curl -fsSL .../install.sh | bash -s -- --version 0.1.0
+curl -fsSL https://raw.githubusercontent.com/llmx-tech/llmx.prompt-studio/main/install.sh | bash -s -- --version 0.1.3
 
 # Windows
-.\install.ps1 -Version 0.1.0
+.\install.ps1 -Version 0.1.3
 ```
 
 ### Manual install
@@ -51,8 +44,8 @@ Download the right file from [Releases](https://github.com/llmx-tech/llmx.prompt
 |----------|------|
 | macOS (Apple Silicon) | `.dmg` (aarch64) |
 | macOS (Intel) | `.dmg` (x86_64) |
-| Linux (universal) | `.AppImage` |
-| Linux (Debian/Ubuntu) | `.deb` |
+| Linux (Ubuntu 22.04) | `.deb` (ubuntu22) |
+| Linux (Ubuntu 24.04) | `.deb` (ubuntu24) |
 | Windows | `-setup.exe` |
 
 ## Uninstall
@@ -65,8 +58,7 @@ rm -rf ~/Library/Application\ Support/de.llmx.promptstudio
 
 **Linux:**
 ```bash
-rm -f ~/.local/bin/LLMxPromptStudio.AppImage
-rm -f ~/.local/share/applications/llmx-prompt-studio.desktop
+sudo dpkg -r llmx-prompt-studio
 rm -rf ~/.config/de.llmx.promptstudio
 ```
 
@@ -77,8 +69,8 @@ rm -rf ~/.config/de.llmx.promptstudio
 | Platform | Requirement |
 |----------|-------------|
 | macOS | 10.15+ (Catalina or later), Apple Silicon or Intel |
-| Linux | x86_64, GTK 3, WebKitGTK 4.1 |
-| Windows | 10+, x86_64 or ARM64 |
+| Linux | x86_64, Ubuntu 22.04+ or Debian 12+, GTK 3, WebKitGTK 4.1 |
+| Windows | 10+, x86_64 |
 
 ## License
 
