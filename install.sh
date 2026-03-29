@@ -144,8 +144,8 @@ detect_distro_label() {
 
 install_linux_deb() {
     local DISTRO_LABEL="$1"
-    local DEB_NAME="LLMx Prompt Studio_${VERSION}_amd64-${DISTRO_LABEL}.deb"
-    local DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/v${VERSION}/${DEB_NAME// /%20}"
+    local DEB_NAME="LLMx.Prompt.Studio_${VERSION}_amd64-${DISTRO_LABEL}.deb"
+    local DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/v${VERSION}/${DEB_NAME}"
     local DEB_PATH="${TMPDIR_INSTALL}/llmx.deb"
 
     info "Downloading ${DEB_NAME}..."
